@@ -11,6 +11,9 @@ from homeassistant.components.device_tracker import SourceType
 from homeassistant.components.device_tracker.config_entry import ScannerEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC, format_mac
+from homeassistant.helpers.entity import DeviceInfo
+from .const import DOMAIN
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -76,6 +79,15 @@ class GLinetDevice(ScannerEntity):
         self._attr_hostname: str = self._device.name or DEFAULT_DEVICE_NAME
         self._attr_ip_address: str | None = self._device.ip_address
         self._attr_mac_address: str = self._device.mac
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info to associate the tracker entity with a device."""
+        return DeviceInfo(
+            connections={(CONNECTION_NETWORK_MAC, format_mac(self._attr_mac_address))},
+            default_name=self._attr_hostname,
+            via_device=(DOMAIN, self._router.unique_id or self._router.factory_mac),
+        )
 
     @property
     def unique_id(self) -> str:

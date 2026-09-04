@@ -261,12 +261,12 @@ class GLinetRouter:
                     self._host,
                 )
             return None
-        except TokenError as exc:
+        except (TokenError, AuthenticationError) as exc:
             self._token_error = True
             if not self._connect_error:
                 self._connect_error = True
                 _LOGGER.warning(
-                    "GL-iNet router %s token was refused %s, will try to re-autheticate before next poll",
+                    "GL-iNet router %s token was refused %s, will try to re-authenticate before next poll",
                     self._host,
                     exc,
                 )
@@ -350,12 +350,6 @@ class GLinetRouter:
         for device_mac, dev_info in wrt_devices.items():
             # Skip if we've already have this device
             if device_mac in self._devices:
-                continue
-
-            alias = dev_info.get("alias", "").strip()
-            name = dev_info.get("name", "").strip()
-            # Skip if both alias and name are empty
-            if not alias and not name:
                 continue
 
             new_device = True
